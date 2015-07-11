@@ -79,6 +79,34 @@ apiRouter.route("/users")
       }
       res.json({ message: "User created!"});
     });
+  })
+
+  // Get all the users (accesed at GET http://localhost:8080/api/users)
+  .get(function(req, res) {
+    User.find(function(err, users) {
+      if (err) {
+        res.send(err);
+      }
+
+      // Return the users
+      res.json(users);
+    });
+  });
+
+// On routes that end in /users/:user_id
+// ---------------------------------------------
+apiRouter.route("/users/:user_id")
+
+  // Get the user with that id
+  // (Accesed at GET http://localhost:8080/api/users/:user_id)
+  .get(function(req, res) {
+    User.findById(req.params.user_id, function(err, user) {
+      if (err) {
+        res.send(err);
+      }
+      // Return that user
+      res.json(user);
+    });
   });
 
 // REGISTER OUR ROUTES -----------------------
