@@ -25,6 +25,9 @@ app.use(function(req, res, next) {
 // Log all request to the console
 app.use(morgan("dev"));
 
+// Connect to our database (hosted on modulus.io)
+mongoose.connect("mongodb://node:noder@apollo.modulusmongo.net:27017/pepoZ7oz");
+
 // ROUTES FOR OUR API
 // ==========================================
 
@@ -51,7 +54,7 @@ app.use("/api", apiRouter);
 // START THE SERVER
 // ===========================================
 app.listen(port);
-console.log("Magic happens on port" + port);
+console.log("Magic happens on port " + port);
 
 
 
