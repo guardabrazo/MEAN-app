@@ -8,6 +8,9 @@ var bodyParser = require("body-parser");// Get body-parser
 var morgan = require("morgan");         // Used to see requests
 var mongoose = require("mongoose");     // To work with the database
 var port = process.env.PORT || 8080;    // Set the port for our app
+var jwt = require("jsonwebtoken");      // Get JSON web token package
+var superSecret = "ilovetokenstokenstokens";
+
 
 // APP CONFIGURATION -----------------------
 // Use body parser so we can grab information from POST requests
@@ -41,6 +44,52 @@ app.get("/", function(req, res) {
 
 // Get an instance of the Express router
 var apiRouter = express.Router();
+
+// Route for authenticating a user (POST http://localhost:8080/api/authenticate)
+apiRouter.post("/authenticate", function(req, res) {
+
+  // Find the user
+  // Select the name username and password explicitly
+  User.findOne({
+    username: req.body.username
+  }).select("name username password").exec(function(err, user) {
+    if (err) {
+      throw err;
+    }
+    // No user with that username was found
+    if (!user) {
+      res.json({
+        success: false,
+        message: "Authentication failed. User not found"
+      });
+    }else if (user) {
+      // Check if password matches
+      var validPassword = user.comparePassword(req.body.password);
+      if (!validPassword) {
+        res.json({
+          success: false,
+          message: "Authentication failed. Wrong password"
+        });
+      }else{
+        // If user is found and password is right
+        var token = jwt.sign({
+          name: user.name,
+          username: user.username
+        }, superSecret, {
+          expiresInMinutes: 1440 //Expires in 24 hours
+        });
+
+        // Return the information including token as JSON
+        res.json({
+          success: true,
+          message: "Enjoy your token!",
+          token: token
+        });
+      }
+    }
+  });
+});
+
 
 // Middleware to use for all requests
 apiRouter.use(function(req, res, next) {
