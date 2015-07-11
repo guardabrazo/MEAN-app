@@ -28,6 +28,9 @@ app.use(morgan("dev"));
 // Connect to our database (hosted on modulus.io)
 mongoose.connect("mongodb://node:noder@apollo.modulusmongo.net:27017/pepoZ7oz");
 
+var User = require("./app/models/user");
+
+
 // ROUTES FOR OUR API
 // ==========================================
 
@@ -39,13 +42,44 @@ app.get("/", function(req, res) {
 // Get an instance of the Express router
 var apiRouter = express.Router();
 
+// Middleware to use for all requests
+apiRouter.use(function(req, res, next) {
+  // Do logging
+  console.log("Somebody just came to our app!");
+  // We will add more to the middleware later, this is where we will authenticate users
+  next();
+});
+
 // Test route to make sure everything is working
 // Accesed at GET http://localhost:8080/api
 apiRouter.get("/", function(req, res) {
   res.json({ message: "Horray! Welcome to the API"});
 });
 
-// More routes for the API will happen here
+// On routes that end in /users
+// -------------------------------------------
+apiRouter.route("/users")
+  // Create a user (accessed at POST http://localhost:8080/api/users)
+  .post(function(req, res) {
+    // Create a new instance of the User model
+    var user = new User();
+    // Ser the users info (comes from the request)
+    user.name = req.body.name;
+    user.username = req.body.username;
+    user.password = req.body.password;
+    // Save the user and check for errors
+    user.save(function(err) {
+      if (err) {
+        // Duplicate entry
+        if (err.code == 11000){
+          return res.json({ success: false, message: "A user with that username already exists."});
+        }else{
+          return res.send(err);
+        }
+      }
+      res.json({ message: "User created!"});
+    });
+  });
 
 // REGISTER OUR ROUTES -----------------------
 // All of our routes will be prefixed with /api
