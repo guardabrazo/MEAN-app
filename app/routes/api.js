@@ -94,6 +94,11 @@ module.exports = function(app, express) {
     res.json({ message: "Horray! Welcome to the API"});
   });
 
+  // API endpoint to get user information
+  apiRouter.get("/me", function(req, res) {
+    res.send(req.decoded);
+  });
+
   // On routes that end in /users
   // -------------------------------------------
   apiRouter.route("/users")
